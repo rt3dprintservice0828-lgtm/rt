@@ -1,0 +1,144 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="space-y-16">
+
+    <!-- Hero Section -->
+    <section id="home" class="bg-blue-50 py-20 rounded-xl shadow-lg">
+        <div class="text-center max-w-4xl mx-auto px-4">
+            <h1 class="text-5xl md:text-6xl font-extrabold text-gray-900 mb-4">
+                Your Ideas, Printed
+            </h1>
+            <p class="text-xl text-gray-600 mb-8">
+                Turn Your Digital Designs into Reality
+            </p>
+            <p class="text-lg text-gray-700 mb-10">
+                Our 3D Printing Request Management System simplifies the entire process—request, track, and receive high-quality 3D prints, all in one place.
+            </p>
+            <div class="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-6">
+                <a href="#contact" class="px-8 py-3 text-lg font-semibold text-white btn-primary shadow-lg hover:shadow-xl">
+                    Request a Print Now
+                </a>
+                <a href="#about" class="px-8 py-3 text-lg font-semibold text-gray-700 bg-white border border-gray-300 rounded-lg shadow-md hover:bg-gray-100">
+                    Learn More
+                </a>
+            </div>
+        </div>
+        
+        <!-- Features Grid -->
+        <div class="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto px-4">
+            <div class="p-6 bg-white rounded-xl shadow-lg text-center">
+                <h3 class="text-xl font-bold text-gray-900 mb-2">Easy Submission</h3>
+                <p class="text-gray-600">Upload your STL/OBJ file and details in minutes.</p>
+            </div>
+            <div class="p-6 bg-white rounded-xl shadow-lg text-center">
+                <h3 class="text-xl font-bold text-gray-900 mb-2">Real-Time Tracking</h3>
+                <p class="text-gray-600">Monitor your project status from review to delivery.</p>
+            </div>
+            <div class="p-6 bg-white rounded-xl shadow-lg text-center">
+                <h3 class="text-xl font-bold text-gray-900 mb-2">Quality Guaranteed</h3>
+                <p class="text-gray-600">Precision printing for prototypes and projects.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="py-12 px-4">
+        <h2 class="text-4xl font-bold text-gray-900 text-center mb-6">About RT3DPRINT</h2>
+        <div class="max-w-3xl mx-auto text-center">
+            <p class="text-lg text-gray-700 leading-relaxed">
+                The RT3DPRINT System is designed to simplify and automate the entire 3D printing workflow. We bridge the gap between users who wish to print models and administrators who manage the printing process. Our platform offers a user-friendly interface for easy submissions, transparent communication, and secure request tracking. Our mission is to make 3D printing **accessible, efficient, and well-organized**, empowering students and innovators to bring their ideas to life faster and smarter.
+            </p>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section id="services" class="py-12 px-4 bg-gray-50 rounded-xl shadow-inner">
+        <h2 class="text-4xl font-bold text-gray-900 text-center mb-12">Our Services</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            
+            <div class="bg-white p-6 rounded-lg shadow-lg border-t-4 border-blue-500">
+                <span class="text-4xl mb-4 block">🎓</span>
+                <h3 class="text-2xl font-semibold text-gray-800 mb-3">College and School Projects</h3>
+                <p class="text-gray-600">
+                    We specialize in printing academic models for students—engineering prototypes, architecture models, or science projects—ensuring precision for your deadlines.
+                </p>
+            </div>
+            
+            <div class="bg-white p-6 rounded-lg shadow-lg border-t-4 border-green-500">
+                <span class="text-4xl mb-4 block">⚙️</span>
+                <h3 class="text-2xl font-semibold text-gray-800 mb-3">Functional Prototyping</h3>
+                <p class="text-gray-600">
+                    Support your research and innovation by creating robust, functional prototypes for testing, design validation, and rapid product development.
+                </p>
+            </div>
+            
+            <div class="bg-white p-6 rounded-lg shadow-lg border-t-4 border-yellow-500">
+                <span class="text-4xl mb-4 block">🧩</span>
+                <h3 class="text-2xl font-semibold text-gray-800 mb-3">Custom Creative Prints</h3>
+                <p class="text-gray-600">
+                    Need something unique? We offer fully customized 3D printing solutions for creative designs, artistic displays, or unique mechanical parts.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact/Request Form Section -->
+    <section id="contact" class="py-12 px-4">
+        <h2 class="text-4xl font-bold text-gray-900 text-center mb-6">Request a Print or Get in Touch</h2>
+        <div class="max-w-2xl mx-auto bg-white p-8 rounded-xl shadow-2xl border border-gray-200">
+            
+            {% if not logged_in %}
+                <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-6" role="alert">
+                    <p class="font-bold">Sign In Required</p>
+                    <p>You must <a href="{{ url_for('login') }}" class="font-semibold underline">Sign In</a> to submit a project request.</p>
+                </div>
+            {% endif %}
+
+            <form action="{{ url_for('submit_request') }}" method="POST" enctype="multipart/form-data">
+                <div class="space-y-6">
+                    <div>
+                        <label for="project_type" class="block text-lg font-medium text-gray-700 mb-2">Select Project Type</label>
+                        <select id="project_type" name="project_type" required 
+                                class="mt-1 block w-full py-3 px-4 border border-gray-300 bg-white rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-base"
+                                {% if not logged_in %} disabled {% endif %}>
+                            <option value="">-- Select Project Type --</option>
+                            <option value="College Project">College Project</option>
+                            <option value="School Project">School Project</option>
+                            <option value="Prototype">Functional Prototype</option>
+                            <option value="Custom Print">Custom Creative Print</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="description" class="block text-lg font-medium text-gray-700 mb-2">Project Description</label>
+                        <textarea id="description" name="description" rows="4" required placeholder="Describe your project, material requirements, and desired finish..."
+                                  class="mt-1 block w-full shadow-sm sm:text-base border-gray-300 rounded-md p-3 border resize-none"
+                                  {% if not logged_in %} disabled {% endif %}></textarea>
+                    </div>
+                    
+                    <div>
+                        <label for="stl_file" class="block text-lg font-medium text-gray-700 mb-2">Upload 3D Model File (Any File Type or Archive)</label>
+                        <!-- UPDATED: Removed 'accept' attribute to allow any file type in browser -->
+                        <input type="file" name="stl_file" id="stl_file" required
+                               class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                               {% if not logged_in %} disabled {% endif %}>
+                    </div>
+                </div>
+
+                <div class="mt-8">
+                    <button type="submit" 
+                            class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-lg font-medium text-white btn-primary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+                            {% if not logged_in %} disabled {% endif %}>
+                        Submit Project Request
+                    </button>
+                    {% if not logged_in %}
+                        <p class="text-center text-sm text-gray-500 mt-3">Sign In to Submit</p>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </section>
+
+</div>
+{% endblock %}

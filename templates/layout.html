@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RT3DPRINT | {{ title }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* General styling for better look */
+        body { font-family: 'Inter', sans-serif; background-color: #f7f9fc; }
+        .btn-primary { background-color: #3b82f6; border-radius: 0.5rem; transition: background-color 0.3s; }
+        .btn-primary:hover { background-color: #2563eb; }
+        .flash-message { padding: 1rem; margin-bottom: 1rem; border-radius: 0.5rem; font-weight: 500; }
+        .flash-success { background-color: #d1fae5; color: #065f46; border: 1px solid #34d399; }
+        .flash-danger { background-color: #fee2e2; color: #991b1b; border: 1px solid #f87171; }
+        .flash-warning { background-color: #fffbeb; color: #92400e; border: 1px solid #fbbf24; }
+        .dashboard-card { transition: transform 0.2s; }
+        .dashboard-card:hover { transform: translateY(-3px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
+    </style>
+</head>
+<body>
+    <header class="bg-white shadow-md">
+        <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+            <a href="{{ url_for('index') }}" class="text-2xl font-bold text-gray-900">RT3DPRINT</a>
+            <div class="hidden md:flex space-x-8 items-center text-gray-600">
+                <a href="{{ url_for('index') }}#home" class="hover:text-gray-900">Home</a>
+                <a href="{{ url_for('index') }}#about" class="hover:text-gray-900">About</a>
+                <a href="{{ url_for('index') }}#services" class="hover:text-gray-900">Services</a>
+                <a href="{{ url_for('index') }}#contact" class="hover:text-gray-900">Contact</a>
+                
+                {% if logged_in and current_user_is_admin %}
+                    <a href="{{ url_for('admin_dashboard') }}" class="text-red-600 font-semibold hover:text-red-700">Admin Dashboard</a>
+                {% endif %}
+
+                {% if logged_in %}
+                    <a href="{{ url_for('user_dashboard') }}" class="text-blue-600 font-semibold hover:text-blue-700">Dashboard</a>
+                    <a href="{{ url_for('logout') }}" class="px-3 py-2 text-sm text-white btn-primary">Sign Out</a>
+                {% else %}
+                    <a href="{{ url_for('login') }}" class="hover:text-gray-900">Sign In</a>
+                    <a href="{{ url_for('signup') }}" class="px-3 py-2 text-sm text-white btn-primary">Sign Up</a>
+                {% endif %}
+            </div>
+
+            <!-- Mobile Menu Button (Hamburger) -->
+            <button class="md:hidden text-gray-500 hover:text-gray-700 focus:outline-none" aria-label="Toggle menu" onclick="document.getElementById('mobile-menu').classList.toggle('hidden')">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+            </button>
+        </nav>
+        
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-gray-200">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3 flex flex-col items-start">
+                <a href="{{ url_for('index') }}#home" class="block py-2 text-base font-medium text-gray-700 hover:bg-gray-50 w-full">Home</a>
+                <a href="{{ url_for('index') }}#about" class="block py-2 text-base font-medium text-gray-700 hover:bg-gray-50 w-full">About</a>
+                <a href="{{ url_for('index') }}#services" class="block py-2 text-base font-medium text-gray-700 hover:bg-gray-50 w-full">Services</a>
+                <a href="{{ url_for('index') }}#contact" class="block py-2 text-base font-medium text-gray-700 hover:bg-gray-50 w-full">Contact</a>
+                
+                {% if logged_in and current_user_is_admin %}
+                    <a href="{{ url_for('admin_dashboard') }}" class="block py-2 text-base font-medium text-red-600 hover:bg-gray-50 w-full">Admin Dashboard</a>
+                {% endif %}
+
+                {% if logged_in %}
+                    <a href="{{ url_for('user_dashboard') }}" class="block py-2 text-base font-medium text-blue-600 hover:bg-gray-50 w-full">Dashboard</a>
+                    <a href="{{ url_for('logout') }}" class="block py-2 text-base font-medium text-white btn-primary w-full text-center mt-2">Sign Out</a>
+                {% else %}
+                    <a href="{{ url_for('login') }}" class="block py-2 text-base font-medium text-gray-700 hover:bg-gray-50 w-full">Sign In</a>
+                    <a href="{{ url_for('signup') }}" class="block py-2 text-base font-medium text-white btn-primary w-full text-center mt-1">Sign Up</a>
+                {% endif %}
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="px-4 sm:px-0">
+                        {% for category, message in messages %}
+                            <div class="flash-message flash-{{ category }} mb-4" role="alert">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    <footer class="bg-gray-800 text-white py-6 mt-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-sm">
+            &copy; 2025 RT3DPRINT | All Rights Reserved.
+        </div>
+    </footer>
+</body>
+</html>

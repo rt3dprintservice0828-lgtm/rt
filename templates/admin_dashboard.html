@@ -1,0 +1,106 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<h1 class="text-3xl font-bold text-red-600 mb-6">Admin Dashboard</h1>
+<p class="text-lg text-gray-600 mb-8">Manage All 3D Print Requests (Total: {{ projects|length }})</p>
+<p class="text-sm font-mono text-gray-500 mb-4">Admin Email: {{ current_user_email }}</p>
+
+<div class="space-y-8">
+    {% for project in projects %}
+    <div class="bg-white p-6 rounded-lg shadow-xl border-t-8 
+        {% if project.status == 'PENDING' %} border-gray-500
+        {% elif project.status == 'PAYMENT_AWAITING' %} border-yellow-500
+        {% elif project.status == 'PAID' %} border-indigo-500
+        {% elif project.status == 'PROCESSING' %} border-blue-500
+        {% elif project.status == 'DELIVERED' %} border-green-500
+        {% endif %}">
+        
+        <div class="flex justify-between items-start mb-4">
+            <h2 class="text-2xl font-bold text-gray-900">Project #{{ project.id }}</h2>
+            <span class="px-3 py-1 text-sm font-medium rounded-full 
+                {% if project.status == 'PENDING' %} bg-gray-200 text-gray-800
+                {% elif project.status == 'PAYMENT_AWAITING' %} bg-yellow-100 text-yellow-800
+                {% elif project.status == 'PAID' %} bg-indigo-100 text-indigo-800
+                {% elif project.status == 'PROCESSING' %} bg-blue-100 text-blue-800
+                {% elif project.status == 'DELIVERED' %} bg-green-100 text-green-800
+                {% endif %}">
+                STATUS: {{ project.status | replace('_', ' ') | upper }}
+            </span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700 border-b pb-4 mb-4">
+            <div>
+                <p><strong>User Email:</strong> <span class="font-semibold">{{ project.user.email }}</span></p>
+                <p><strong>Project Type:</strong> {{ project.project_type }}</p>
+                <p><strong>Rating:</strong> {{ project.user_rating if project.user_rating else 'N/A' }}</p>
+            </div>
+            <div>
+                <p><strong>STL File:</strong> <a href="{{ url_for('download_file', filename=project.stl_path.split('/')[-1]) }}" class="text-blue-600 hover:underline">Download Model</a></p>
+                <p><strong>Amount Set:</strong> ${{ "%.2f"|format(project.payment_amount) if project.payment_amount else 'N/A' }}</p>
+                {% if project.delivery_link %}
+                <p><strong>Delivery:</strong> <a href="{{ project.delivery_link }}" target="_blank" class="text-green-600 hover:underline">Link</a></p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <p class="text-gray-700 mb-4"><strong>Description:</strong> {{ project.description }}</p>
+
+        <!-- Dynamic Workflow Actions for Admin -->
+
+        <!-- Stage: PENDING (Step 3: Admin Payment Setup) -->
+        {% if project.status == 'PENDING' %}
+        <div class="bg-gray-100 p-4 rounded-md mt-4">
+            <h3 class="text-xl font-semibold text-gray-800 mb-3">Action: Set Payment Details</h3>
+            <form action="{{ url_for('admin_set_payment', project_id=project.id) }}" method="POST" class="space-y-3">
+                <input type="number" name="amount" required step="0.01" placeholder="Payment Amount ($)"
+                       class="mt-1 block w-full md:w-1/3 px-3 py-2 border border-gray-300 rounded-md shadow-sm sm:text-sm">
+                <input type="url" name="qr_link" required placeholder="Payment QR Link / Instructions URL"
+                       class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm sm:text-sm">
+                <button type="submit" class="py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700">
+                    Set Payment & Notify User
+                </button>
+            </form>
+        </div>
+        {% endif %}
+        
+        <!-- Stage: PAID (Payment Proof Uploaded by User) -->
+        {% if project.status == 'PAID' %}
+        <div class="bg-indigo-100 p-4 rounded-md mt-4">
+            <h3 class="text-xl font-semibold text-indigo-800 mb-3">Payment Verified: Start Processing</h3>
+            <p class="mb-3">
+                <strong>Proof Screenshot:</strong> 
+                <a href="{{ url_for('download_file', filename=project.payment_proof_path.split('/')[-1]) }}" class="text-indigo-600 hover:underline font-semibold" target="_blank">
+                    View Payment Proof
+                </a>
+            </p>
+            <p class="text-sm text-indigo-700">Manually change status to 'PROCESSING' in DB or add a route for this.</p>
+        </div>
+        {% endif %}
+        
+        <!-- Stage: PROCESSING / PAID (Step 5: Admin Project Delivery) -->
+        {% if project.status in ['PAID', 'PROCESSING'] %}
+        <div class="bg-blue-100 p-4 rounded-md mt-4">
+            <h3 class="text-xl font-semibold text-blue-800 mb-3">Action: Deliver Project</h3>
+            <form action="{{ url_for('admin_delivery', project_id=project.id) }}" method="POST" class="space-y-3">
+                <input type="url" name="delivery_link" required placeholder="Final Project ZIP / Drive Link"
+                       class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm sm:text-sm">
+                <textarea name="admin_notes" rows="2" placeholder="Notes for the user (e.g., Print settings, material used)..."
+                          class="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md p-3 border resize-none"></textarea>
+                <button type="submit" class="py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700">
+                    Mark Delivered & Notify User
+                </button>
+            </form>
+        </div>
+        {% endif %}
+
+        <!-- Stage: DELIVERED (Rating info) -->
+        {% if project.status == 'DELIVERED' %}
+        <div class="bg-green-100 p-4 rounded-md mt-4">
+            <p class="font-semibold text-green-800">Delivery Complete.</p>
+        </div>
+        {% endif %}
+
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
